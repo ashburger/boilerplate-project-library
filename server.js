@@ -11,6 +11,9 @@ const runner            = require('./test-runner');
 
 const app = express();
 
+const mongoose = require("mongoose");
+mongoose.set('strictQuery', true);
+
 app.use('/public', express.static(process.cwd() + '/public'));
 
 app.use(cors({origin: '*'})); //USED FOR FCC TESTING PURPOSES ONLY!
@@ -39,8 +42,17 @@ app.use(function(req, res, next) {
 
 //Start our server and tests!
 const listener = app.listen(process.env.PORT || 3000, function () {
+
   console.log('Your app is listening on port ' + listener.address().port);
   if(process.env.NODE_ENV==='test') {
+    mongoose.connect(process.env.TESTDB)
+    .then(()=>{
+      console.log('Connected to test database');
+    })
+    .catch((err)=>{
+      console.log('Test Database Connection failed');
+      console.log(err)
+    });
     console.log('Running Tests...');
     setTimeout(function () {
       try {
@@ -50,6 +62,15 @@ const listener = app.listen(process.env.PORT || 3000, function () {
           console.error(e);
       }
     }, 1500);
+  }else{
+    mongoose.connect(process.env.DB)
+    .then(()=>{
+      console.log('Connected to database');
+    })
+    .catch((err)=>{
+      console.log('Connection failed');
+      console.log(err)
+    });
   }
 });
 
